@@ -1,20 +1,34 @@
 # write data to kafka cluster, topic
 # schedule fetch p[rice from yahoo finance
 # configurable stock symbole
-
+import json
+#
 import argparse
 import schedule 
 import time
 import logging
 from kafka import KafkaProducer
 from yahoo_finance import Share
-
+#atexit can be used to register shudown_hook
+import atexit
 # initialize the logging
 logging.basicConfig()
 #  get one logger instance of data_producer
 logger = logging.getLogger('data-producer') # logging package  ??? 
 # debug info warn error fetal
 logger.setLevel(logging.DEBUG)
+
+
+symbole = ''
+topic_name = ''
+kafka_broker = ''
+def shutdown_hook(producer):
+	logger.info('closing kafka producer')
+	#kafka will batch the data, it is possible that we let send, but the message has not been sent
+	#so we need to flush these current message to database or other places
+	producer.flush(10)
+	producer.close(10)
+	logger.info('kafka producer closed')
 
 def fetch_price_and_send(producer, stock):
 	#fetch the stock data
@@ -28,7 +42,20 @@ def fetch_price_and_send(producer, stock):
 		'symbole': symbole,
 		'last_trade_time': trade_time,
 		'price': price
-	}
+	} 
+	#'' -> " "
+	# python --> string ""
+	data = json.dumps(data)
+	#send data to kafka
+	try:
+		#API: producer -> kafka : topic, data
+		producer.send(topic = topic_name, value = data)
+		logger.debug('sent data to kafka %s', data)
+	except Exception as e:
+		#it is not reliabe in the network!! so use try except .. ???  learn it 
+		logger.warn('fail to send price to kafka')
+
+
 	logger.info('retrieve stock price %s', data)
 
 
@@ -58,6 +85,8 @@ if __name__ == '__main__': # ???
 	# every 1 second, trigger fetch_price_and_send function, producer and stock are two parameters of it
 	# endless loop
 	schedule.every(1).second.do(fetch_price_and_send, producer, stock)
+	# close the producer before we run the the code
+	atexit.register(shutdown_hook, producer)##??? what is the order
 
 	while True:
 		schedule.run_pending() # ??? 
