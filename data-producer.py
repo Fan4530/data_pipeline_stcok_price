@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 004d9798008df5045b1eb47fe141014688d6d862
 # write data to kafka cluster, topic
 # schedule fetch p[rice from yahoo finance
 # configurable stock symbole
@@ -122,6 +125,7 @@ if __name__ == '__main__': # ???
 
 	while True:
 		schedule.run_pending() # ??? 
+<<<<<<< HEAD
 		time.sleep(1) # time package   ????? 
 =======
 # write data to any kafka cluster
@@ -231,3 +235,6 @@ if __name__ == '__main__':
         schedule.run_pending()
         time.sleep(1)
 >>>>>>> a
+=======
+		time.sleep(1) # time package   ????? 
+>>>>>>> 004d9798008df5045b1eb47fe141014688d6d862
